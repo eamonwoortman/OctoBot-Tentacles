@@ -41,10 +41,12 @@ def backtesting():
             source = request.args["source"]
             run_on_common_part_only = request.args.get("run_on_common_part_only", "true") == "true"
             reset_tentacle_config = request.args.get("reset_tentacle_config", False)
+            date_range_start = request.args.get("range_start", "")
+            date_range_end = request.args.get("range_end", "")
             success, reply = start_backtesting_using_specific_files(files,
                                                                     source,
                                                                     reset_tentacle_config,
-                                                                    run_on_common_part_only)
+                                                                    run_on_common_part_only, date_range_start, date_range_end)
         if success:
             send_backtesting_status()
             return get_rest_reply(jsonify(reply))

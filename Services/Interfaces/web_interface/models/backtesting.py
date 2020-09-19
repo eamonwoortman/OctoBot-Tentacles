@@ -15,6 +15,7 @@
 #  License along with this library.
 from os import remove
 from asyncio import gather
+from datetime import datetime
 
 from octobot.api.backtesting import create_independent_backtesting, \
     initialize_and_run_independent_backtesting, \
@@ -27,15 +28,19 @@ from octobot_backtesting.api.data_file_converters import convert_data_file
 from octobot_backtesting.api.exchange_data_collector import collect_exchange_historical_data
 from octobot_backtesting.constants import BACKTESTING_FILE_PATH
 from octobot_backtesting.api.data_file import get_all_available_data_files, get_file_description, delete_data_file
-from octobot_services.interfaces.util.bot import get_global_config, get_bot_api
+from octobot_services.interfaces.util.bot import get_global_config, get_bot_api, get_edited_config
 from octobot_services.interfaces.util.util import run_in_bot_main_loop, run_in_bot_async_executor
 from octobot_tentacles_manager.api.configurator import get_tentacles_setup_config
 from tentacles.Services.Interfaces.web_interface.constants import BOT_TOOLS_BACKTESTING, BOT_TOOLS_BACKTESTING_SOURCE, \
     BOT_TOOLS_STRATEGY_OPTIMIZER
 from tentacles.Services.Interfaces.web_interface.web_interface import WebInterface
+import octobot_commons.config_manager as config_manager
 
 LOGGER = get_logger("DataCollectorWebInterfaceModel")
 
+BACKTESTING_CONFIG_DATE_RANGE = "date_range"
+BACKTESTING_CONFIG_DATE_RANGE_START = "start_date"
+BACKTESTING_CONFIG_DATE_RANGE_END = "end_date"
 
 async def _get_description(data_file, files_with_description):
     description = await get_file_description(data_file)
@@ -53,8 +58,23 @@ def get_data_files_with_description():
     files = get_all_available_data_files()
     return run_in_bot_async_executor(_retrieve_data_files_with_description(files))
 
+def update_backtesting_settings(start_date_string, end_date_string):
+    current_edited_config = get_edited_config()
+    start_date = datetime.fromisoformat(start_date_string)
+    end_date = datetime.fromisoformat(end_date_string)
 
-def start_backtesting_using_specific_files(files, source, reset_tentacle_config=False, run_on_common_part_only=True):
+    if (start_date is None or end_date is None):
+        return
+
+    if BACKTESTING_CONFIG_DATE_RANGE not in current_edited_config:
+        current_edited_config[BACKTESTING_CONFIG_DATE_RANGE] = {BACKTESTING_CONFIG_DATE_RANGE_START: start_date_string, BACKTESTING_CONFIG_DATE_RANGE_END: end_date_string}
+    else:
+        current_edited_config[BACKTESTING_CONFIG_DATE_RANGE][BACKTESTING_CONFIG_DATE_RANGE_START] = start_date_string
+        current_edited_config[BACKTESTING_CONFIG_DATE_RANGE][BACKTESTING_CONFIG_DATE_RANGE_END] = end_date_string
+        
+    config_manager.simple_save_config_update(current_edited_config)
+
+def start_backtesting_using_specific_files(files, source, reset_tentacle_config=False, run_on_common_part_only=True, range_start_string="", range_end_string=""):
     try:
         tools = WebInterface.tools
         previous_independant_backtesting = tools[BOT_TOOLS_BACKTESTING]
@@ -70,6 +90,7 @@ def start_backtesting_using_specific_files(files, source, reset_tentacle_config=
                 tentacles_setup_config = get_tentacles_setup_config()
             else:
                 tentacles_setup_config = get_bot_api().get_edited_tentacles_config()
+            update_backtesting_settings(range_start_string, range_end_string)
             config = get_global_config()
             independent_backtesting = create_independent_backtesting(config,
                                                                      tentacles_setup_config,

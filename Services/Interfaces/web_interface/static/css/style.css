@@ -265,3 +265,11 @@ table.dataTable tfoot th {
     background: #343a40;
     font-weight: normal;
 }
+
+.date-range-control {
+    color: white;
+}
+
+.datepicker > div {
+    display: inherit;
+}

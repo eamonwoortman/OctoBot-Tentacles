@@ -24,6 +24,7 @@
                 <th scope="col">Date of recording</th>
                 <th scope="col">Exchange</th>
                 <th scope="col">Time frame(s)</th>
+                <th scope="col" style="display: none;">Timestamp</th>
             </tr>
           </thead>
           <tbody>
@@ -38,10 +39,38 @@
                     <td>{{description.date}}</td>
                     <td>{{description.exchange}}</td>
                     <td>{{", ".join(description.time_frames)}}</td>
+                    <td  style="display: none;">{{description.date_timestamp}}</td>
                 </tr>
             {% endfor %}
           </tbody>
         </table>
+        <!--Grid column-->
+        <div class="col-md-6 mb-4">
+            <!--<div class="input-group input-daterange"> <input type="text" id="start"
+                class="form-control text-left mr-2"> <label class="ml-3 form-control-placeholder" id="start-p"
+                for="start">Start Date</label> <span class="fa fa-calendar" id="fa-1"></span> <input type="text"
+                id="end" class="form-control text-left ml-2"> <label class="ml-3 form-control-placeholder"
+                id="end-p" for="end">End Date</label> <span class="fa fa-calendar" id="fa-2"></span> </div>
+            -->
+            <!--Date pickers-->
+            
+            <p class="lead my-4">
+                <span class="badge info-color-dark p-2">Date range</span>
+            </p>
+            <div class="form-row mb-4 input-daterange">
+                
+                <div class="md-form col-4">
+                    <input placeholder="Selected date" type="text" id="daterange-start" class="form-control datepicker date-range-control">
+                    <label for="daterange-start">From</label>
+                </div>
+                <div class="md-form col-4">
+                    <input placeholder="Selected date" type="text" id="daterange-end" class="form-control datepicker date-range-control">
+                    <label for="daterange-end">To</label>
+                </div>
+            </div>
+        
+        </div>
+        <!--Grid column-->
         <span id='backtesting_progress_bar' style='display: none;'>
             <div class="card-title">
                 <h2>Backtesting in progress</h2>
